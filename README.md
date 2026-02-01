@@ -23,7 +23,7 @@ Half-day SPA demo showing a live SRU search against the ONB catalogue, a timelin
 ## Search behavior
 - Default field is "any" (mapped to `alma.all_for_ui`).
 - Subject/title/author map to `alma.subject`, `alma.title`, `alma.creator`.
-- Results are capped (default 100 records, max 200) for speed.
+ - Results are capped (default 100 records, max 1000) for speed.
 - Aggregations are computed on the fetched sample, not the full catalogue.
 
 ## Backend
@@ -69,6 +69,12 @@ Entry: `frontend/src/App.vue` (built by Vite)
   - Used as the build-time API base URL in production.
 - Optional: `BASE_PATH` for static hosting (used by the GitHub Pages workflow).
 
+## Deploy backend to Fly.io
+- The backend deploy uses `backend/Dockerfile` and `backend/fly.toml` (Gunicorn on port 8080).
+- From `backend/`, set your Fly app name in `fly.toml` (or run `fly launch --no-deploy` to generate it).
+- Deploy with `fly deploy`.
+- After deploy, set `VITE_API_BASE` to the Fly URL (for local dev or GitHub Pages).
+
 ## Deploy frontend to GitHub Pages
 - Workflow: `.github/workflows/deploy-pages.yml` builds `frontend/` and publishes `frontend/dist`.
 - Set a repository variable named `VITE_API_BASE` to your backend URL.
@@ -90,7 +96,7 @@ pip install -r backend/requirements.txt
 python -m pytest backend/tests
 ```
 
-3) Start the backend server (default port 5000):
+3) Start the backend server (default port 3000):
 
 ```bash
 python backend/app.py
@@ -119,7 +125,7 @@ npm install
 6) Start the frontend dev server (requests are proxied to `/api` on the backend):
 
 ```bash
-VITE_API_BASE=http://localhost:5000 npm run dev
+VITE_API_BASE=http://localhost:3000 npm run dev
 ```
 
 7) Open the app:
