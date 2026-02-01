@@ -10,7 +10,10 @@ from flask import Flask, jsonify, make_response, request, send_from_directory
 
 SRU_BASE_URL = "https://obv-at-oenb.alma.exlibrisgroup.com/view/sru/43ACC_ONB"
 DEFAULT_MAX_RECORDS = 100
-MAX_RECORDS_LIMIT = 1000
+MAX_RECORDS_LIMIT = 500
+# ONB SRU currently returns at most 50 records per searchRetrieve response.
+SRU_FETCH_BATCH_SIZE = 50
+SRU_REQUEST_TIMEOUT_SECONDS = 20
 CACHE_TTL_SECONDS = 300
 
 CACHE = {}
@@ -239,41 +242,75 @@ def _fetch_sru_records(query_text, field, max_records, start_record, cql_overrid
     if cached:
         return cached["records"], cached["total"], ""
 
-    params = {
-        "version": "1.2",
-        "operation": "searchRetrieve",
-        "recordSchema": "marcxml",
-        "maximumRecords": max_records,
-        "startRecord": start_record,
-        "query": cql,
-    }
-    try:
-        resp = requests.get(SRU_BASE_URL, params=params, timeout=12)
-        resp.raise_for_status()
-    except requests.RequestException as exc:
-        return [], 0, f"SRU request failed: {exc}"
-
-    try:
-        root = ET.fromstring(resp.text)
-    except ET.ParseError:
-        return [], 0, "SRU response was not valid XML"
-
-    diagnostics = root.findall(".//diag:diagnostic", NS)
-    if diagnostics:
-        message = diagnostics[0].findtext(
-            "diag:message", default="Unknown SRU diagnostic", namespaces=NS
-        )
-        return [], 0, message
-
-    total_text = root.findtext(".//srw:numberOfRecords", default="0", namespaces=NS)
-    try:
-        total = int(total_text)
-    except ValueError:
-        total = 0
-
+    total = 0
     records = []
-    for rec in root.findall(".//marc:record", NS):
-        records.append(_parse_record(rec))
+    next_start = max(1, int(start_record))
+
+    while len(records) < max_records:
+        if total and next_start > total:
+            break
+
+        remaining = max_records - len(records)
+        fetch_size = min(remaining, SRU_FETCH_BATCH_SIZE)
+        params = {
+            "version": "1.2",
+            "operation": "searchRetrieve",
+            "recordSchema": "marcxml",
+            "maximumRecords": fetch_size,
+            "startRecord": next_start,
+            "query": cql,
+        }
+        try:
+            resp = requests.get(
+                SRU_BASE_URL, params=params, timeout=SRU_REQUEST_TIMEOUT_SECONDS
+            )
+            resp.raise_for_status()
+        except requests.RequestException as exc:
+            return [], 0, f"SRU request failed: {exc}"
+
+        try:
+            root = ET.fromstring(resp.text)
+        except ET.ParseError:
+            return [], 0, "SRU response was not valid XML"
+
+        diagnostics = root.findall(".//diag:diagnostic", NS)
+        if diagnostics:
+            message = diagnostics[0].findtext(
+                "diag:message", default="Unknown SRU diagnostic", namespaces=NS
+            )
+            return [], 0, message
+
+        total_text = root.findtext(".//srw:numberOfRecords", default="0", namespaces=NS)
+        try:
+            total = int(total_text)
+        except ValueError:
+            total = 0
+
+        batch = []
+        for rec in root.findall(".//marc:record", NS):
+            batch.append(_parse_record(rec))
+        if not batch:
+            break
+
+        records.extend(batch[:remaining])
+        if len(records) >= max_records:
+            break
+
+        next_position_text = root.findtext(
+            ".//srw:nextRecordPosition", default="", namespaces=NS
+        )
+        try:
+            next_position = int(next_position_text) if next_position_text else 0
+        except ValueError:
+            next_position = 0
+
+        if next_position > next_start:
+            next_start = next_position
+        else:
+            next_start += len(batch)
+
+        if len(batch) < fetch_size and not next_position:
+            break
 
     _cache_set(cache_key, records, total)
     return records, total, ""

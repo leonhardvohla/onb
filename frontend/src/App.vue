@@ -54,8 +54,12 @@
       <div class="timeline-header">
         <h2>{{ t("timeline") }}</h2>
         <div class="meta">
-          {{ t("sampleSizeLabel", { limit }) }}
-          {{ t("totalLabel", { total: total || t("notAvailable") }) }}
+          {{
+            t("timelineSummaryLabel", {
+              count: timelineRecordsCount,
+              total: total || t("notAvailable")
+            })
+          }}
         </div>
       </div>
       <div class="timeline-visual">
@@ -155,9 +159,9 @@ const API_BASE = resolveApiBase(import.meta.env, import.meta.env.DEV);
 
 const query = ref("");
 const field = ref("any");
-const limit = ref(100);
+const limit = ref(50);
 const page = ref(1);
-const sizes = [50, 100, 500, 1000];
+const sizes = [50, 100, 500];
 const totalPages = ref(0);
 const total = ref(0);
 const records = ref([]);
@@ -180,6 +184,9 @@ const timelineTooltipLabel = point => {
 };
 
 const timelineData = computed(() => buildTimelineData(records.value));
+const timelineRecordsCount = computed(() =>
+  timelineData.value.reduce((sum, point) => sum + (Number(point?.count) || 0), 0)
+);
 const filteredRecords = computed(() =>
   filterRecordsByRange(records.value, range.value)
 );

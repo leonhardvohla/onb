@@ -23,6 +23,8 @@ const MESSAGES = {
     loading: "Loading...",
     timeline: "Timeline",
     sampleSizeLabel: "Sample size: up to {limit} records.",
+    timelineSummaryLabel:
+      "{count} records shown. Total in catalouge: {total}",
     totalLabel: "Total in catalogue: {total}",
     notAvailable: "n/a",
     selectedRange: "Selected range: {start} - {end}",
@@ -65,6 +67,8 @@ const MESSAGES = {
     loading: "Lädt...",
     timeline: "Zeitstrahl",
     sampleSizeLabel: "Stichprobe: bis zu {limit} Einträge.",
+    timelineSummaryLabel:
+      "{count} Einträge angezeigt. Insgesamt im Katalog: {total}",
     totalLabel: "Gesamt im Katalog: {total}",
     notAvailable: "k. A.",
     selectedRange: "Ausgewählter Bereich: {start} - {end}",

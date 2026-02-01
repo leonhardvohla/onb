@@ -23,7 +23,8 @@ SPA demo showing a live SRU search against the ONB catalogue, a timeline of publ
 ## Search behavior
 - Default field is "any" (mapped to `alma.all_for_ui`).
 - Subject/title/author map to `alma.subject`, `alma.title`, `alma.creator`.
- - Results are capped (default 100 records, max 1000) for speed.
+- Results are capped (default 50 records in the UI; backend max 500) for speed.
+- ONB SRU currently returns at most 50 records per `searchRetrieve` call; the backend batches multiple SRU calls per app request so higher sample sizes (e.g. 500) still work.
 - Aggregations are computed on the fetched sample, not the full catalogue.
 
 ## Backend
@@ -60,7 +61,7 @@ Entry: `frontend/src/App.vue` (built by Vite)
 - Stats and record list update client-side when the range changes.
 - Search params are reflected in the URL (`?q=...&field=...&size=...&page=...`) and read on load.
 - UI language (English/German) is auto-detected with precedence `?lang` -> localStorage -> browser locale; unsupported `lang` values are ignored.
-- Sample sizes offered in the UI: 50, 100, 500, 1000.
+- Sample sizes offered in the UI: 50, 100, 500.
 - Default demo query is `author=Rilke` if no URL params are present.
 - Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
 
@@ -146,5 +147,6 @@ npm test
 
 ## Notes and limitations
 - Aggregations reflect the fetched sample, not the full catalogue.
+- Higher sample sizes can be slower because the backend must stitch multiple SRU pages (50 records each) into one response.
 - If the SRU index names differ, adjust the CQL mapping in `backend/app.py`.
 - The frontend is built and deployed as static assets (the backend no longer serves the UI).
