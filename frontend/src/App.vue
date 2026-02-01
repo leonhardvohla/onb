@@ -26,18 +26,18 @@
         :placeholder="t('searchPlaceholder')"
         :aria-label="t('searchAria')"
       />
-      <select v-model="field" :aria-label="t('fieldAria')">
+      <select v-model="field" @change="searchOnControlChange" :aria-label="t('fieldAria')">
         <option value="any">{{ t("anyField") }}</option>
         <option value="subject">{{ t("subject") }}</option>
         <option value="title">{{ t("titleField") }}</option>
         <option value="author">{{ t("author") }}</option>
       </select>
-      <select v-model.number="limit" :aria-label="t('sampleSizeAria')">
+      <select v-model.number="limit" @change="searchOnControlChange" :aria-label="t('sampleSizeAria')">
         <option v-for="size in sizes" :key="size" :value="size">
           {{ t("recordsCount", { count: size }) }}
         </option>
       </select>
-      <select v-model.number="page" :aria-label="t('pageAria')">
+      <select v-model.number="page" @change="searchOnControlChange" :aria-label="t('pageAria')">
         <option v-for="p in pages" :key="p" :value="p">
           {{ t("pageLabel", { page: p }) }}
         </option>
@@ -268,6 +268,11 @@ const errorMessage = computed(() => {
   if (errorKey.value) return t(errorKey.value);
   return "";
 });
+
+const searchOnControlChange = () => {
+  if (!query.value || loading.value) return;
+  search();
+};
 
 const search = async () => {
   if (!query.value) {
