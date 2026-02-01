@@ -1,6 +1,6 @@
 # Project overview
 
-Catalogue Through Time is a single-page demo that queries the ONB SRU API live, parses MARCXML into a small normalized shape, and visualizes publication counts by year with top authors/subjects/languages. The frontend is a Vue + D3 SPA served directly by the Flask backend.
+Catalogue Through Time is a single-page demo that queries the ONB SRU API live, parses MARCXML into a small normalized shape, and visualizes publication counts by year with top authors/subjects/languages. The frontend is a Vue + D3 SPA built with Vite and deployed as static assets (the backend is deployed separately).
 
 ## Expectations for agents
 
@@ -11,5 +11,6 @@ Catalogue Through Time is a single-page demo that queries the ONB SRU API live, 
 ## Repo structure
 
 - `backend/`: Flask SRU API client, MARCXML parsing, in-memory cache.
-- `frontend/`: Single-page Vue + D3 UI (served by Flask).
+- `frontend/`: Vite-based Vue + D3 UI (source in `frontend/src`, tests in `frontend/tests`).
 - `backend/tests/`: Pytest tests for MARCXML parsing and behavior.
+- `.github/workflows/deploy-pages.yml`: GitHub Pages build/deploy for the frontend.

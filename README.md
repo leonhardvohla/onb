@@ -11,7 +11,7 @@ Half-day SPA demo showing a live SRU search against the ONB catalogue, a timelin
 
 ## Stack
 - Backend: Flask + requests (SRU MARCXML parsing)
-- Frontend: Vue 3 + D3 (CDN)
+- Frontend: Vue 3 + D3 (Vite build)
 
 ## Data flow (high level)
 1) User enters a search term and field (any/subject/title/author).
@@ -53,7 +53,7 @@ File: `backend/app.py`
 - TTL: 5 minutes.
 
 ## Frontend
-File: `frontend/index.html`
+Entry: `frontend/src/App.vue` (built by Vite)
 
 - Vue 3 handles state (query, records, range, stats).
 - D3 renders the timeline SVG and brush interaction.
@@ -63,9 +63,20 @@ File: `frontend/index.html`
 - Default demo query is `author=Grillparzer` if no URL params are present.
 - Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
 
+### Frontend environment
+- `VITE_API_BASE`: base URL for the backend API (e.g. `https://your-backend.fly.dev`).
+  - Used as the Vite dev-server proxy target for `/api`.
+  - Used as the build-time API base URL in production.
+- Optional: `BASE_PATH` for static hosting (used by the GitHub Pages workflow).
+
+## Deploy frontend to GitHub Pages
+- Workflow: `.github/workflows/deploy-pages.yml` builds `frontend/` and publishes `frontend/dist`.
+- Set a repository variable named `VITE_API_BASE` to your backend URL.
+- The workflow sets `BASE_PATH` to `/<repo>/` for project pages. For user/org pages or a custom domain, set `BASE_PATH=/`.
+
 ## Run locally
 
-1) Create a virtualenv and install dependencies:
+1) Create a virtualenv and install backend dependencies:
 
 ```bash
 python -m venv .venv
@@ -73,13 +84,13 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
-2) Run tests:
+2) Run backend tests:
 
 ```bash
 python -m pytest backend/tests
 ```
 
-3) Start the server (default port 5000):
+3) Start the backend server (default port 5000):
 
 ```bash
 python backend/app.py
@@ -91,13 +102,40 @@ Or use a custom port:
 PORT=3000 python backend/app.py
 ```
 
-4) Open the app:
+4) Create a frontend env file (optional but recommended):
+
+```bash
+cd frontend
+cp .env.example .env
+```
+
+5) Install frontend dependencies:
+
+```bash
+cd frontend
+npm install
+```
+
+6) Start the frontend dev server (requests are proxied to `/api` on the backend):
+
+```bash
+VITE_API_BASE=http://localhost:5000 npm run dev
+```
+
+7) Open the app:
 
 ```text
-http://localhost:5000
+http://localhost:5173
+```
+
+8) Run frontend tests:
+
+```bash
+cd frontend
+npm test
 ```
 
 ## Notes and limitations
 - Aggregations reflect the fetched sample, not the full catalogue.
 - If the SRU index names differ, adjust the CQL mapping in `backend/app.py`.
-- The UI is a single HTML file served by Flask (no build step).
+- The frontend is built and deployed as static assets (the backend no longer serves the UI).
