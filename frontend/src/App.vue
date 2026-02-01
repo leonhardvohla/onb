@@ -19,7 +19,7 @@
       </div>
     </header>
 
-    <div class="panel search">
+    <div :class="['panel', 'search', { 'panel-loading': loading }]" :aria-busy="loading ? 'true' : 'false'">
       <input
         v-model.trim="query"
         @keyup.enter="search"
@@ -47,7 +47,10 @@
       </button>
     </div>
 
-    <div class="panel timeline-card">
+    <div
+      :class="['panel', 'timeline-card', { 'panel-loading': loading }]"
+      :aria-busy="loading ? 'true' : 'false'"
+    >
       <div class="timeline-header">
         <h2>{{ t("timeline") }}</h2>
         <div class="meta">
@@ -55,11 +58,21 @@
           {{ t("totalLabel", { total: total || t("notAvailable") }) }}
         </div>
       </div>
-      <TimelineChart
-        :data="timelineData"
-        v-model:range="range"
-        :empty-label="t('noTimelineData')"
-      />
+      <div class="timeline-visual">
+        <TimelineChart
+          :data="timelineData"
+          v-model:range="range"
+          :empty-label="t('noTimelineData')"
+        />
+        <div
+          v-if="loading"
+          class="timeline-loading-overlay"
+          role="status"
+          :aria-label="t('loading')"
+        >
+          <span class="timeline-spinner" aria-hidden="true"></span>
+        </div>
+      </div>
       <div class="range-row">
         <span v-if="range">
           {{ t("selectedRange", { start: range[0], end: range[1] }) }}
@@ -71,7 +84,7 @@
     </div>
 
     <div class="stats">
-      <div class="panel">
+      <div :class="['panel', { 'panel-loading': loading }]" :aria-busy="loading ? 'true' : 'false'">
         <h3>{{ t("topAuthors") }}</h3>
         <ul>
           <li v-for="item in topAuthors" :key="item.value">
@@ -80,7 +93,7 @@
           </li>
         </ul>
       </div>
-      <div class="panel">
+      <div :class="['panel', { 'panel-loading': loading }]" :aria-busy="loading ? 'true' : 'false'">
         <h3>{{ t("topSubjects") }}</h3>
         <ul>
           <li v-for="item in topSubjects" :key="item.value">
@@ -89,7 +102,7 @@
           </li>
         </ul>
       </div>
-      <div class="panel">
+      <div :class="['panel', { 'panel-loading': loading }]" :aria-busy="loading ? 'true' : 'false'">
         <h3>{{ t("topLanguages") }}</h3>
         <ul>
           <li v-for="item in topLanguages" :key="item.value">
@@ -100,7 +113,7 @@
       </div>
     </div>
 
-    <div class="panel records">
+    <div :class="['panel', 'records', { 'panel-loading': loading }]" :aria-busy="loading ? 'true' : 'false'">
       <h3>
         {{ t("recordsHeading", { shown: displayRecords.length, total: filteredRecords.length }) }}
       </h3>
