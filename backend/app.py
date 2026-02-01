@@ -1,3 +1,4 @@
+import math
 import re
 import time
 from pathlib import Path
@@ -8,7 +9,7 @@ from flask import Flask, jsonify, request, send_from_directory
 
 SRU_BASE_URL = "https://obv-at-oenb.alma.exlibrisgroup.com/view/sru/43ACC_ONB"
 DEFAULT_MAX_RECORDS = 100
-MAX_RECORDS_LIMIT = 200
+MAX_RECORDS_LIMIT = 1000
 CACHE_TTL_SECONDS = 300
 
 CACHE = {}
@@ -171,18 +172,18 @@ def _build_cql(query_text, field):
     elif field == "title":
         index = "alma.title"
     elif field == "author":
-        index = "alma.author"
+        index = "alma.creator"
     else:
         index = "alma.all_for_ui"
     return f'{index}="{q}"'
 
 
-def _fetch_sru_records(query_text, field, max_records, cql_override=""):
+def _fetch_sru_records(query_text, field, max_records, start_record, cql_override=""):
     cql = cql_override.strip() if cql_override else _build_cql(query_text, field)
     if not cql:
         return [], 0, "Missing query"
 
-    cache_key = f"{cql}|{max_records}"
+    cache_key = f"{cql}|{max_records}|{start_record}"
     cached = _cache_get(cache_key)
     if cached:
         return cached["records"], cached["total"], ""
@@ -192,7 +193,7 @@ def _fetch_sru_records(query_text, field, max_records, cql_override=""):
         "operation": "searchRetrieve",
         "recordSchema": "marcxml",
         "maximumRecords": max_records,
-        "startRecord": 1,
+        "startRecord": start_record,
         "query": cql,
     }
     try:
@@ -225,6 +226,17 @@ def _fetch_sru_records(query_text, field, max_records, cql_override=""):
 
     _cache_set(cache_key, records, total)
     return records, total, ""
+
+
+def _start_record(page, max_records):
+    page = max(1, int(page))
+    return (page - 1) * max_records + 1
+
+
+def _total_pages(total, max_records):
+    if total <= 0:
+        return 0
+    return max(1, math.ceil(total / max_records))
 
 
 def _aggregate(records):
@@ -283,8 +295,14 @@ def api_search():
         max_records = DEFAULT_MAX_RECORDS
     max_records = max(1, min(max_records, MAX_RECORDS_LIMIT))
 
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+    start_record = _start_record(page, max_records)
+
     records, total, error = _fetch_sru_records(
-        query_text, field, max_records, cql_override
+        query_text, field, max_records, start_record, cql_override
     )
     if error:
         return jsonify({"error": error, "records": [], "total": 0}), 502
@@ -292,6 +310,9 @@ def api_search():
     return jsonify(
         {
             "query": {"q": query_text, "field": field, "cql": cql_override},
+            "page": page,
+            "startRecord": start_record,
+            "totalPages": _total_pages(total, max_records),
             "records": records,
             "total": total,
             "limit": max_records,
@@ -314,8 +335,14 @@ def api_aggregates():
         max_records = DEFAULT_MAX_RECORDS
     max_records = max(1, min(max_records, MAX_RECORDS_LIMIT))
 
+    try:
+        page = int(request.args.get("page", 1))
+    except ValueError:
+        page = 1
+    start_record = _start_record(page, max_records)
+
     records, total, error = _fetch_sru_records(
-        query_text, field, max_records, cql_override
+        query_text, field, max_records, start_record, cql_override
     )
     if error:
         return jsonify({"error": error, "records": [], "total": 0}), 502
@@ -324,6 +351,9 @@ def api_aggregates():
     return jsonify(
         {
             "query": {"q": query_text, "field": field, "cql": cql_override},
+            "page": page,
+            "startRecord": start_record,
+            "totalPages": _total_pages(total, max_records),
             "total": total,
             "limit": max_records,
             "sampled": True,
@@ -339,4 +369,4 @@ def api_aggregates():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=3000)
+    app.run(debug=False, host="0.0.0.0", port=3000)

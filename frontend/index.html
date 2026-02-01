@@ -58,13 +58,14 @@
 
     .search {
       display: grid;
-      grid-template-columns: 1fr 160px 120px;
+      grid-template-columns: 1fr 140px 140px 140px 120px;
       gap: 12px;
       align-items: center;
     }
 
     .search input,
-    .search select {
+    .search select,
+    .search input[type="number"] {
       padding: 12px 14px;
       border-radius: 8px;
       border: 1px solid var(--line);
@@ -93,6 +94,7 @@
       transition: transform 0.15s ease, box-shadow 0.2s ease;
       box-shadow: 0 12px 20px rgba(216, 123, 53, 0.25);
     }
+
 
     .search button:hover { transform: translateY(-1px); }
 
@@ -240,6 +242,12 @@
         <option value="title">Title</option>
         <option value="author">Author</option>
       </select>
+      <select v-model.number="limit">
+        <option v-for="size in sizes" :key="size" :value="size">{{ size }} records</option>
+      </select>
+      <select v-model.number="page">
+        <option v-for="p in pages" :key="p" :value="p">Page {{ p }}</option>
+      </select>
       <button @click="search" :disabled="loading">{{ loading ? "Loading..." : "Search" }}</button>
     </div>
 
@@ -379,6 +387,9 @@
           query: "",
           field: "any",
           limit: 100,
+          page: 1,
+          sizes: [50, 100, 500, 1000],
+          totalPages: 0,
           total: 0,
           records: [],
           filteredRecords: [],
@@ -394,6 +405,21 @@
         };
       },
       computed: {
+        pages() {
+          const total = this.totalPages || 0;
+          const count = total ? total : 1;
+          const current = Math.max(1, Math.min(this.page, count));
+          const start = Math.max(1, current - 5);
+          const end = Math.min(count, current + 5);
+          const windowed = Array.from(
+            { length: end - start + 1 },
+            (_, idx) => start + idx
+          );
+          const pages = [1, ...windowed, count];
+          return Array.from(new Set(pages)).filter(
+            page => page >= 1 && page <= count
+          );
+        },
         displayRecords() {
           return this.filteredRecords.slice(0, this.recordLimit);
         }
@@ -403,21 +429,32 @@
           const params = new URLSearchParams(window.location.search);
           const q = params.get("q");
           const field = params.get("field");
+          const limit = params.get("size");
+          const page = params.get("page");
           if (q) this.query = q;
           if (field) this.field = field;
+          if (limit) this.limit = Number(limit) || this.limit;
+          if (page) this.page = Math.max(1, Number(page) || 1);
         },
         updateParams() {
           const params = new URLSearchParams();
           if (this.query) params.set("q", this.query);
           if (this.field && this.field !== "any") params.set("field", this.field);
+          if (this.limit) params.set("size", this.limit);
+          if (this.page && this.page > 1) params.set("page", this.page);
           const newUrl = `${window.location.pathname}?${params.toString()}`;
           window.history.replaceState({}, "", newUrl);
+        },
+        normalizePage() {
+          if (!this.page || this.page < 1) this.page = 1;
+          this.page = Math.floor(this.page);
         },
         async search() {
           if (!this.query) {
             this.error = "Enter a search term first.";
             return;
           }
+          this.normalizePage();
           this.loading = true;
           this.error = "";
           this.note = "";
@@ -425,7 +462,7 @@
           this.updateParams();
 
           try {
-            const url = `${API_BASE}/api/search?q=${encodeURIComponent(this.query)}&field=${encodeURIComponent(this.field)}&maxRecords=${this.limit}`;
+            const url = `${API_BASE}/api/search?q=${encodeURIComponent(this.query)}&field=${encodeURIComponent(this.field)}&maxRecords=${this.limit}&page=${this.page}`;
             const response = await fetch(url);
             const data = await response.json();
             if (!response.ok) {
@@ -437,6 +474,7 @@
             }
             this.records = data.records || [];
             this.total = data.total || 0;
+            this.totalPages = data.totalPages || 0;
             this.note = data.note || "";
             this.timelineData = this.buildTimelineData(this.records);
             this.applyRange();

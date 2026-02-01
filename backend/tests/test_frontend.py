@@ -20,3 +20,24 @@ def test_timeline_bar_width_is_thin():
     path = Path(__file__).resolve().parents[2] / "frontend" / "index.html"
     content = path.read_text(encoding="utf-8")
     assert "Math.min(2" in content
+
+
+def test_search_controls_include_paging_and_shuffle():
+    path = Path(__file__).resolve().parents[2] / "frontend" / "index.html"
+    content = path.read_text(encoding="utf-8")
+    assert "size" in content
+    assert "page" in content
+
+
+def test_page_dropdown_present():
+    path = Path(__file__).resolve().parents[2] / "frontend" / "index.html"
+    content = path.read_text(encoding="utf-8")
+    assert "Page {{ p }}" in content
+    assert "current - 5" in content
+    assert "current + 5" in content
+
+
+def test_sample_size_options_present():
+    path = Path(__file__).resolve().parents[2] / "frontend" / "index.html"
+    content = path.read_text(encoding="utf-8")
+    assert "sizes: [50, 100, 500, 1000]" in content

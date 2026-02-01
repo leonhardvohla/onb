@@ -22,7 +22,7 @@ Half-day SPA demo showing a live SRU search against the ONB catalogue, a timelin
 
 ## Search behavior
 - Default field is "any" (mapped to `alma.all_for_ui`).
-- Subject/title/author map to `alma.subject`, `alma.title`, `alma.author`.
+- Subject/title/author map to `alma.subject`, `alma.title`, `alma.creator`.
 - Results are capped (default 100 records, max 200) for speed.
 - Aggregations are computed on the fetched sample, not the full catalogue.
 
@@ -31,7 +31,8 @@ File: `backend/app.py`
 
 ### Endpoints
 - `GET /api/search`
-  - Params: `q`, `field`, `maxRecords`, optional `cql`
+  - Params: `q`, `field`, `maxRecords`, `page`, optional `cql`
+  - Returns: `page`, `startRecord`, `totalPages` to help with pagination UI.
   - Returns: normalized `records`, `total` from SRU, and a `note` about sampling.
 
 - `GET /api/aggregates`
@@ -57,8 +58,10 @@ File: `frontend/index.html`
 - Vue 3 handles state (query, records, range, stats).
 - D3 renders the timeline SVG and brush interaction.
 - Stats and record list update client-side when the range changes.
-- Search params are reflected in the URL (`?q=...&field=...`) and read on load.
+- Search params are reflected in the URL (`?q=...&field=...&size=...&page=...`) and read on load.
+- Sample sizes offered in the UI: 50, 100, 500, 1000.
 - Default demo query is `author=Grillparzer` if no URL params are present.
+- Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
 
 ## Run locally
 

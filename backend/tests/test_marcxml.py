@@ -64,3 +64,21 @@ def test_extract_year_from_008_when_260_missing():
     record = ET.fromstring(xml)
     data = app._parse_record(record)
     assert data["year"] == 1995
+
+
+def test_start_record_calculation():
+    assert app._start_record(1, 100) == 1
+    assert app._start_record(2, 100) == 101
+    assert app._start_record(3, 50) == 101
+    assert app._start_record(2, 1000) == 1001
+
+
+def test_total_pages():
+    assert app._total_pages(0, 100) == 0
+    assert app._total_pages(1, 100) == 1
+    assert app._total_pages(100, 100) == 1
+    assert app._total_pages(101, 100) == 2
+
+
+def test_build_cql_author_uses_creator():
+    assert app._build_cql("Grillparzer", "author") == 'alma.creator="Grillparzer"'
