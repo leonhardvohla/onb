@@ -15,3 +15,9 @@ Catalogue Through Time is a single-page demo that queries the ONB SRU API live, 
 - `frontend/`: Vite-based Vue + D3 UI (source in `frontend/src`, tests in `frontend/tests`).
 - `backend/tests/`: Pytest tests for MARCXML parsing and behavior.
 - `.github/workflows/deploy-pages.yml`: GitHub Pages build/deploy for the frontend.
+
+## Deployment notes
+
+- GitHub Pages workflow expects the repo variable `VITE_API_BASE` (backend URL).
+- Vite uses a relative base (`./`) so Pages deployments work without extra base-path config.
+- Backend must allow CORS from the Pages origin for browser requests to succeed.

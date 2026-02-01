@@ -67,7 +67,6 @@ Entry: `frontend/src/App.vue` (built by Vite)
 - `VITE_API_BASE`: base URL for the backend API (e.g. `https://your-backend.fly.dev`).
   - Used as the Vite dev-server proxy target for `/api`.
   - Used as the build-time API base URL in production.
-- Optional: `BASE_PATH` for static hosting (used by the GitHub Pages workflow).
 
 ## Deploy backend to Fly.io
 - The backend deploy uses `backend/Dockerfile` and `backend/fly.toml` (Gunicorn on port 8080).
@@ -77,8 +76,11 @@ Entry: `frontend/src/App.vue` (built by Vite)
 
 ## Deploy frontend to GitHub Pages
 - Workflow: `.github/workflows/deploy-pages.yml` builds `frontend/` and publishes `frontend/dist`.
-- Set a repository variable named `VITE_API_BASE` to your backend URL.
-- The workflow sets `BASE_PATH` to `/<repo>/` for project pages. For user/org pages or a custom domain, set `BASE_PATH=/`.
+- In GitHub → Settings → Pages, set **Source** to **GitHub Actions**.
+- In GitHub → Settings → Secrets and variables → Actions → Variables, add:
+  - `VITE_API_BASE` = your backend URL
+- The Vite build uses a relative base (`./`) so it works for project pages or custom domains without extra config.
+- Ensure the backend allows CORS from your Pages origin (otherwise browser requests to `VITE_API_BASE` will be blocked).
 
 ## Run locally
 
