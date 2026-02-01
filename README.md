@@ -1,6 +1,7 @@
-# Catalogue Through Time (ONB SRU demo)
+# Catalogue Through Time
 
-SPA demo showing a live SRU search against the ONB catalogue, a timeline of publication counts by year, and top authors/subjects/languages for a selected time range.
+
+Data visualisation demo app showing live SRU searches against the ONB catalogue, a timeline of publication counts by year, and top authors/subjects/languages for a selected time range. Built with a Vue.js frontend, Python Flask backend, MARCXML processing, and CI/CD.
 
 ## What it does
 - Search the ONB catalogue via SRU (live, no local dataset).

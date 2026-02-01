@@ -53,11 +53,13 @@ describe("resolveInitialLocale", () => {
 describe("translate", () => {
   it("replaces tokens", () => {
     expect(translate("de", "recordsCount", { count: 5 })).toBe("5 Einträge");
+    expect(translate("en", "repoLink")).toBe("GitHub");
+    expect(translate("de", "repoLink")).toBe("GitHub");
     expect(translate("en", "timelineSummaryLabel", { count: 42, total: 2095 })).toBe(
-      "42 records with year data shown. Total search results in catalouge: 2095"
+      "42 records shown. Total in catalouge: 2095"
     );
     expect(translate("de", "timelineSummaryLabel", { count: 42, total: 2095 })).toBe(
-      "42 Einträge mit Jahresangabe angezeigt. Suchergebnisse insgesamt im Katalog: 2095"
+      "42 Einträge angezeigt. Insgesamt im Katalog: 2095"
     );
   });
 

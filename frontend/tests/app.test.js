@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const appSource = readFileSync(new URL("../src/App.vue", import.meta.url), "utf8");
+const stylesSource = readFileSync(new URL("../src/styles.css", import.meta.url), "utf8");
 
 describe("App search controls", () => {
   it("uses 50 as default sample size and does not offer 1000", () => {
@@ -24,5 +25,12 @@ describe("App search controls", () => {
   it("shows timeline meta from records that include year data", () => {
     expect(appSource).toMatch(/timelineRecordsCount/);
     expect(appSource).toMatch(/t\("timelineSummaryLabel",\s*\{/);
+  });
+
+  it("renders a header link to the GitHub repository", () => {
+    expect(appSource).toMatch(/href="https:\/\/github\.com\/leonhardvohla\/onb"/);
+    expect(appSource).toMatch(/target="_blank"/);
+    expect(appSource).toMatch(/t\("repoLink"\)/);
+    expect(stylesSource).toMatch(/\.repo-link\s*\{[\s\S]*color:\s*var\(--muted\);/);
   });
 });

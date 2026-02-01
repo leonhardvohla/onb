@@ -44,6 +44,7 @@ const MESSAGES = {
     noTimelineData: "No timeline data yet.",
     timelineEntryInYearSingular: "{count} entry in {year}",
     timelineEntryInYearPlural: "{count} entries in {year}",
+    repoLink: "GitHub",
     languageLabel: "Language",
     languageAria: "Language"
   },
@@ -88,6 +89,7 @@ const MESSAGES = {
     noTimelineData: "Noch keine Zeitstrahl-Daten.",
     timelineEntryInYearSingular: "{count} Eintrag im Jahr {year}",
     timelineEntryInYearPlural: "{count} Einträge im Jahr {year}",
+    repoLink: "GitHub",
     languageLabel: "Sprache",
     languageAria: "Sprache"
   }

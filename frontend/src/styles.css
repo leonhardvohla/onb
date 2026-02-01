@@ -62,8 +62,30 @@ header p {
   color: var(--muted);
 }
 
-.language-select {
+.header-actions {
   align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.repo-link {
+  color: var(--accent-2);
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px 12px;
+  background: white;
+}
+
+.repo-link:hover {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.language-select {
   color: var(--muted);
   font-size: 14px;
 }

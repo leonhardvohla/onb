@@ -6,15 +6,25 @@
           <h1>{{ t("title") }}</h1>
           <p>{{ t("description") }}</p>
         </div>
-        <div class="language-select">
-          <label>
-            <span>{{ t("languageLabel") }}</span>
-            <select v-model="locale" :aria-label="t('languageAria')">
-              <option v-for="option in localeOptions" :key="option.value" :value="option.value">
-                {{ option.label }}
-              </option>
-            </select>
-          </label>
+        <div class="header-actions">
+          <a
+            class="repo-link"
+            href="https://github.com/leonhardvohla/onb"
+            target="_blank"
+            rel="noreferrer"
+          >
+            {{ t("repoLink") }}
+          </a>
+          <div class="language-select">
+            <label>
+              <span>{{ t("languageLabel") }}</span>
+              <select v-model="locale" :aria-label="t('languageAria')">
+                <option v-for="option in localeOptions" :key="option.value" :value="option.value">
+                  {{ option.label }}
+                </option>
+              </select>
+            </label>
+          </div>
         </div>
       </div>
     </header>
