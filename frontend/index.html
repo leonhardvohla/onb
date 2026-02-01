@@ -70,6 +70,15 @@
       border: 1px solid var(--line);
       font-size: 16px;
       background: white;
+      height: 46px;
+    }
+
+    .search select {
+      appearance: none;
+      background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%236f6158' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
     }
 
     .search button {
@@ -80,6 +89,7 @@
       color: white;
       font-weight: 600;
       cursor: pointer;
+      height: 46px;
       transition: transform 0.15s ease, box-shadow 0.2s ease;
       box-shadow: 0 12px 20px rgba(216, 123, 53, 0.25);
     }
@@ -324,7 +334,7 @@
       const x = d3.scaleLinear().domain(xDomain).range([0, width]);
       const y = d3.scaleLinear().domain([0, d3.max(data, d => d.count)]).nice().range([height, 0]);
 
-      const barWidth = Math.max(2, width / data.length - 1);
+      const barWidth = Math.max(1, Math.min(2, width / data.length - 1));
 
       chart.append("g")
         .attr("transform", `translate(0,${height})`)
