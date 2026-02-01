@@ -57,6 +57,8 @@ File: `frontend/index.html`
 - Vue 3 handles state (query, records, range, stats).
 - D3 renders the timeline SVG and brush interaction.
 - Stats and record list update client-side when the range changes.
+- Search params are reflected in the URL (`?q=...&field=...`) and read on load.
+- Default demo query is `author=Grillparzer` if no URL params are present.
 
 ## Run locally
 

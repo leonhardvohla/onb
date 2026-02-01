@@ -389,6 +389,20 @@
         }
       },
       methods: {
+        readParams() {
+          const params = new URLSearchParams(window.location.search);
+          const q = params.get("q");
+          const field = params.get("field");
+          if (q) this.query = q;
+          if (field) this.field = field;
+        },
+        updateParams() {
+          const params = new URLSearchParams();
+          if (this.query) params.set("q", this.query);
+          if (this.field && this.field !== "any") params.set("field", this.field);
+          const newUrl = `${window.location.pathname}?${params.toString()}`;
+          window.history.replaceState({}, "", newUrl);
+        },
         async search() {
           if (!this.query) {
             this.error = "Enter a search term first.";
@@ -398,6 +412,7 @@
           this.error = "";
           this.note = "";
           this.range = null;
+          this.updateParams();
 
           try {
             const url = `${API_BASE}/api/search?q=${encodeURIComponent(this.query)}&field=${encodeURIComponent(this.field)}&maxRecords=${this.limit}`;
@@ -496,7 +511,16 @@
         }
       },
       mounted() {
+        this.readParams();
+        if (!this.query) {
+          this.query = "Grillparzer";
+          this.field = "author";
+          this.updateParams();
+        }
         buildTimeline("timeline", [], null, this.setRange);
+        if (this.query) {
+          this.search();
+        }
       }
     });
 
