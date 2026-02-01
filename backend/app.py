@@ -367,8 +367,6 @@ def api_search():
             "records": records,
             "total": total,
             "limit": max_records,
-            "sampled": True,
-            "note": "Aggregations are computed on the fetched sample, not the full catalogue.",
         }
     )
 
@@ -407,8 +405,6 @@ def api_aggregates():
             "totalPages": _total_pages(total, max_records),
             "total": total,
             "limit": max_records,
-            "sampled": True,
-            "note": "Aggregations are computed on the fetched sample, not the full catalogue.",
             "years": aggregates["years"],
             "top": {
                 "authors": _top_n(aggregates["authors"], 5),

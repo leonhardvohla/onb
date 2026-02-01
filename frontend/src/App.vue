@@ -1,60 +1,78 @@
 <template>
   <div class="app">
     <header>
-      <h1>Catalogue Through Time</h1>
-      <p>
-        Search the ONB catalogue and explore publication counts, authors, subjects,
-        and languages by year.
-      </p>
+      <div class="header-row">
+        <div class="header-text">
+          <h1>{{ t("title") }}</h1>
+          <p>{{ t("description") }}</p>
+        </div>
+        <div class="language-select">
+          <label>
+            <span>{{ t("languageLabel") }}</span>
+            <select v-model="locale" :aria-label="t('languageAria')">
+              <option v-for="option in localeOptions" :key="option.value" :value="option.value">
+                {{ option.label }}
+              </option>
+            </select>
+          </label>
+        </div>
+      </div>
     </header>
 
     <div class="panel search">
       <input
         v-model.trim="query"
         @keyup.enter="search"
-        placeholder="Search term or subject"
-        aria-label="Search term"
+        :placeholder="t('searchPlaceholder')"
+        :aria-label="t('searchAria')"
       />
-      <select v-model="field" aria-label="Field">
-        <option value="any">Any field</option>
-        <option value="subject">Subject</option>
-        <option value="title">Title</option>
-        <option value="author">Author</option>
+      <select v-model="field" :aria-label="t('fieldAria')">
+        <option value="any">{{ t("anyField") }}</option>
+        <option value="subject">{{ t("subject") }}</option>
+        <option value="title">{{ t("titleField") }}</option>
+        <option value="author">{{ t("author") }}</option>
       </select>
-      <select v-model.number="limit" aria-label="Sample size">
+      <select v-model.number="limit" :aria-label="t('sampleSizeAria')">
         <option v-for="size in sizes" :key="size" :value="size">
-          {{ size }} records
+          {{ t("recordsCount", { count: size }) }}
         </option>
       </select>
-      <select v-model.number="page" aria-label="Page">
-        <option v-for="p in pages" :key="p" :value="p">Page {{ p }}</option>
+      <select v-model.number="page" :aria-label="t('pageAria')">
+        <option v-for="p in pages" :key="p" :value="p">
+          {{ t("pageLabel", { page: p }) }}
+        </option>
       </select>
       <button @click="search" :disabled="loading">
-        {{ loading ? "Loading..." : "Search" }}
+        {{ loading ? t("loading") : t("searchButton") }}
       </button>
     </div>
 
     <div class="panel timeline-card">
       <div class="timeline-header">
-        <h2>Timeline</h2>
+        <h2>{{ t("timeline") }}</h2>
         <div class="meta">
-          Sample size: up to {{ limit }} records. Total in catalogue:
-          {{ total || "n/a" }}
+          {{ t("sampleSizeLabel", { limit }) }}
+          {{ t("totalLabel", { total: total || t("notAvailable") }) }}
         </div>
       </div>
-      <TimelineChart :data="timelineData" v-model:range="range" />
+      <TimelineChart
+        :data="timelineData"
+        v-model:range="range"
+        :empty-label="t('noTimelineData')"
+      />
       <div class="range-row">
-        <span v-if="range">Selected range: {{ range[0] }} - {{ range[1] }}</span>
-        <span v-else>No range selected</span>
-        <button v-if="range" @click="clearRange">Clear range</button>
+        <span v-if="range">
+          {{ t("selectedRange", { start: range[0], end: range[1] }) }}
+        </span>
+        <span v-else>{{ t("noRangeSelected") }}</span>
+        <button v-if="range" @click="clearRange">{{ t("clearRange") }}</button>
       </div>
-      <div class="notice">{{ note }}</div>
-      <div class="error" v-if="error">{{ error }}</div>
+      <div class="error" v-if="errorMessage">{{ errorMessage }}</div>
     </div>
 
     <div class="stats">
       <div class="panel">
-        <h3>Top authors</h3>
+        <h3>{{ t("topAuthors") }}</h3>
         <ul>
           <li v-for="item in topAuthors" :key="item.value">
             <span>{{ item.value }}</span>
@@ -63,7 +81,7 @@
         </ul>
       </div>
       <div class="panel">
-        <h3>Top subjects</h3>
+        <h3>{{ t("topSubjects") }}</h3>
         <ul>
           <li v-for="item in topSubjects" :key="item.value">
             <span>{{ item.value }}</span>
@@ -72,7 +90,7 @@
         </ul>
       </div>
       <div class="panel">
-        <h3>Top languages</h3>
+        <h3>{{ t("topLanguages") }}</h3>
         <ul>
           <li v-for="item in topLanguages" :key="item.value">
             <span>{{ item.value }}</span>
@@ -84,8 +102,7 @@
 
     <div class="panel records">
       <h3>
-        Records ({{ displayRecords.length }} shown of
-        {{ filteredRecords.length }})
+        {{ t("recordsHeading", { shown: displayRecords.length, total: filteredRecords.length }) }}
       </h3>
       <div class="record-list">
         <div
@@ -93,25 +110,32 @@
           :key="record.id || record.title"
           class="record-item"
         >
-          <div class="record-title">{{ record.title || "Untitled" }}</div>
+          <div class="record-title">{{ record.title || t("untitled") }}</div>
           <div class="record-meta">
-            {{ record.author || "Unknown" }} - {{ record.year || "n.d." }} -
-            {{ record.language || "und" }}
+            {{ record.author || t("unknown") }} - {{ record.year || t("noDate") }} -
+            {{ record.language || t("undetermined") }}
           </div>
         </div>
       </div>
       <div class="notice" v-if="filteredRecords.length > recordLimit">
-        Showing first {{ recordLimit }} records.
+        {{ t("showingFirst", { count: recordLimit }) }}
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import TimelineChart from "./components/TimelineChart.vue";
 import { resolveApiBase } from "./lib/api";
 import { buildTimelineData, filterRecordsByRange, topN } from "./lib/data";
+import {
+  normalizeLocale,
+  resolveInitialLocale,
+  resolveLocale,
+  storeLocale,
+  translate
+} from "./lib/i18n";
 
 const API_BASE = resolveApiBase(import.meta.env, import.meta.env.DEV);
 
@@ -124,10 +148,17 @@ const totalPages = ref(0);
 const total = ref(0);
 const records = ref([]);
 const range = ref(null);
-const note = ref("");
 const loading = ref(false);
-const error = ref("");
 const recordLimit = 30;
+const ready = ref(false);
+
+const locale = ref(resolveInitialLocale());
+const localeOptions = [
+  { value: "en", label: "English" },
+  { value: "de", label: "Deutsch" }
+];
+
+const t = (key, params) => translate(locale.value, key, params);
 
 const timelineData = computed(() => buildTimelineData(records.value));
 const filteredRecords = computed(() =>
@@ -159,15 +190,17 @@ const clearResults = () => {
   records.value = [];
   total.value = 0;
   totalPages.value = 0;
-  note.value = "";
 };
 
 const readParams = () => {
   const params = new URLSearchParams(window.location.search);
+  const langParam = params.get("lang");
   const q = params.get("q");
   const fieldParam = params.get("field");
   const limitParam = params.get("size");
   const pageParam = params.get("page");
+  const normalizedLang = normalizeLocale(langParam);
+  if (normalizedLang) locale.value = normalizedLang;
   if (q) query.value = q;
   if (fieldParam) field.value = fieldParam;
   if (limitParam) limit.value = Number(limitParam) || limit.value;
@@ -176,6 +209,7 @@ const readParams = () => {
 
 const updateParams = () => {
   const params = new URLSearchParams();
+  if (locale.value) params.set("lang", locale.value);
   if (query.value) params.set("q", query.value);
   if (field.value && field.value !== "any") params.set("field", field.value);
   if (limit.value) params.set("size", String(limit.value));
@@ -192,16 +226,41 @@ const normalizePage = () => {
   page.value = Math.floor(page.value);
 };
 
+const syncLocale = value => {
+  const normalized = resolveLocale(value);
+  if (normalized !== value) {
+    locale.value = normalized;
+    return;
+  }
+  storeLocale(normalized);
+  document.documentElement.lang = normalized;
+  document.title = translate(normalized, "pageTitle");
+};
+
+watch(locale, value => {
+  syncLocale(value);
+  if (ready.value) updateParams();
+});
+
+const errorKey = ref("");
+const errorDetail = ref("");
+const errorMessage = computed(() => {
+  if (errorDetail.value) return errorDetail.value;
+  if (errorKey.value) return t(errorKey.value);
+  return "";
+});
+
 const search = async () => {
   if (!query.value) {
-    error.value = "Enter a search term first.";
+    errorKey.value = "enterSearchTerm";
+    errorDetail.value = "";
     clearResults();
     return;
   }
   normalizePage();
   loading.value = true;
-  error.value = "";
-  note.value = "";
+  errorKey.value = "";
+  errorDetail.value = "";
   range.value = null;
   updateParams();
 
@@ -212,16 +271,17 @@ const search = async () => {
     const response = await fetch(url);
     const data = await response.json();
     if (!response.ok) {
-      error.value = data.error || "Search failed.";
+      errorDetail.value = data.error || "";
+      errorKey.value = data.error ? "" : "searchFailed";
       clearResults();
       return;
     }
     records.value = data.records || [];
     total.value = data.total || 0;
     totalPages.value = data.totalPages || 0;
-    note.value = data.note || "";
   } catch (err) {
-    error.value = "Search failed.";
+    errorKey.value = "searchFailed";
+    errorDetail.value = "";
     clearResults();
   } finally {
     loading.value = false;
@@ -230,6 +290,8 @@ const search = async () => {
 
 onMounted(() => {
   readParams();
+  syncLocale(locale.value);
+  ready.value = true;
   if (!query.value) {
     query.value = "Grillparzer";
     field.value = "author";

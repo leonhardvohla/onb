@@ -14,6 +14,10 @@ const props = defineProps({
   range: {
     type: Array,
     default: null
+  },
+  emptyLabel: {
+    type: String,
+    default: "No timeline data yet."
   }
 });
 
@@ -41,7 +45,7 @@ const render = () => {
   if (!data.length) {
     const notice = document.createElement("div");
     notice.className = "notice";
-    notice.textContent = "No timeline data yet.";
+    notice.textContent = props.emptyLabel || "No timeline data yet.";
     el.appendChild(notice);
     return;
   }
@@ -123,7 +127,7 @@ const render = () => {
 };
 
 watch(
-  () => [props.data, props.range],
+  () => [props.data, props.range, props.emptyLabel],
   () => {
     scheduleRender();
   },

@@ -1,6 +1,6 @@
 # Project overview
 
-Catalogue Through Time is a single-page demo that queries the ONB SRU API live, parses MARCXML into a small normalized shape, and visualizes publication counts by year with top authors/subjects/languages. The frontend is a Vue + D3 SPA built with Vite and deployed as static assets (the backend is deployed separately).
+Catalogue Through Time is a single-page demo that queries the ONB SRU API live, parses MARCXML into a small normalized shape, and visualizes publication counts by year with top authors/subjects/languages. The frontend is a Vue + D3 SPA built with Vite and deployed as static assets (the backend is deployed separately). The UI supports English and German with automatic locale detection and a language selector.
 
 ## Expectations for agents
 

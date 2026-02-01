@@ -1,6 +1,6 @@
 # Catalogue Through Time (ONB SRU demo)
 
-Half-day SPA demo showing a live SRU search against the ONB catalogue, a timeline of publication counts by year, and top authors/subjects/languages for a selected time range.
+SPA demo showing a live SRU search against the ONB catalogue, a timeline of publication counts by year, and top authors/subjects/languages for a selected time range.
 
 ## What it does
 - Search the ONB catalogue via SRU (live, no local dataset).
@@ -33,7 +33,7 @@ File: `backend/app.py`
 - `GET /api/search`
   - Params: `q`, `field`, `maxRecords`, `page`, optional `cql`
   - Returns: `page`, `startRecord`, `totalPages` to help with pagination UI.
-  - Returns: normalized `records`, `total` from SRU, and a `note` about sampling.
+  - Returns: normalized `records` and `total` from SRU.
 
 - `GET /api/aggregates`
   - Params: same as `/api/search`
@@ -59,6 +59,7 @@ Entry: `frontend/src/App.vue` (built by Vite)
 - D3 renders the timeline SVG and brush interaction.
 - Stats and record list update client-side when the range changes.
 - Search params are reflected in the URL (`?q=...&field=...&size=...&page=...`) and read on load.
+- UI language (English/German) is auto-detected with precedence `?lang` -> localStorage -> browser locale; unsupported `lang` values are ignored.
 - Sample sizes offered in the UI: 50, 100, 500, 1000.
 - Default demo query is `author=Grillparzer` if no URL params are present.
 - Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
