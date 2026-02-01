@@ -61,7 +61,7 @@ Entry: `frontend/src/App.vue` (built by Vite)
 - Search params are reflected in the URL (`?q=...&field=...&size=...&page=...`) and read on load.
 - UI language (English/German) is auto-detected with precedence `?lang` -> localStorage -> browser locale; unsupported `lang` values are ignored.
 - Sample sizes offered in the UI: 50, 100, 500, 1000.
-- Default demo query is `author=Grillparzer` if no URL params are present.
+- Default demo query is `author=Rilke` if no URL params are present.
 - Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
 
 ### Frontend environment

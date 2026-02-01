@@ -81,4 +81,4 @@ def test_total_pages():
 
 
 def test_build_cql_author_uses_creator():
-    assert app._build_cql("Grillparzer", "author") == 'alma.creator="Grillparzer"'
+    assert app._build_cql("Rilke", "author") == 'alma.creator="Rilke"'

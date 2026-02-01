@@ -293,7 +293,7 @@ onMounted(() => {
   syncLocale(locale.value);
   ready.value = true;
   if (!query.value) {
-    query.value = "Grillparzer";
+    query.value = "Rilke";
     field.value = "author";
     updateParams();
   }
