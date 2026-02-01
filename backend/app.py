@@ -1,11 +1,12 @@
 import math
+import os
 import re
 import time
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 import requests
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, make_response, request, send_from_directory
 
 SRU_BASE_URL = "https://obv-at-oenb.alma.exlibrisgroup.com/view/sru/43ACC_ONB"
 DEFAULT_MAX_RECORDS = 100
@@ -22,6 +23,56 @@ NS = {
 
 STATIC_DIR = Path(__file__).resolve().parent.parent / "frontend"
 app = Flask(__name__, static_folder=str(STATIC_DIR), static_url_path="")
+app.config["CORS_ALLOW_ORIGINS"] = os.getenv("CORS_ALLOW_ORIGINS", "")
+
+
+def _cors_allowed_origins():
+    raw = app.config.get("CORS_ALLOW_ORIGINS", "")
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
+def _origin_allowed(origin):
+    if not origin:
+        return False
+    origins = _cors_allowed_origins()
+    if not origins:
+        return False
+    if "*" in origins:
+        return True
+    return origin in origins
+
+
+def _apply_cors(response):
+    origin = request.headers.get("Origin")
+    if not _origin_allowed(origin):
+        return response
+    origins = _cors_allowed_origins()
+    allow_all = "*" in origins
+    response.headers["Access-Control-Allow-Origin"] = "*" if allow_all else origin
+    response.headers.setdefault("Access-Control-Allow-Methods", "GET, OPTIONS")
+    response.headers.setdefault("Access-Control-Allow-Headers", "Content-Type")
+    if not allow_all:
+        vary = response.headers.get("Vary")
+        if vary:
+            values = [value.strip() for value in vary.split(",")]
+            if "Origin" not in values:
+                response.headers["Vary"] = f"{vary}, Origin"
+        else:
+            response.headers["Vary"] = "Origin"
+    return response
+
+
+@app.before_request
+def _cors_preflight():
+    if request.method != "OPTIONS":
+        return None
+    response = make_response("", 204)
+    return _apply_cors(response)
+
+
+@app.after_request
+def _cors_headers(response):
+    return _apply_cors(response)
 
 
 def _now():
