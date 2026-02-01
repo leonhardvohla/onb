@@ -62,6 +62,7 @@ Entry: `frontend/src/App.vue` (built by Vite)
 - Stats and record list update client-side when the range changes.
 - Search params are reflected in the URL (`?q=...&field=...&size=...&page=...`) and read on load.
 - UI language (English/German) is auto-detected with precedence `?lang` -> localStorage -> browser locale; unsupported `lang` values are ignored.
+- iOS safe-area support uses `viewport-fit=cover` plus `env(safe-area-inset-*)` and dynamic viewport units so the page background extends behind system bars without clipping content.
 - Sample sizes offered in the UI: 50, 100, 500.
 - Default demo query is `author=Rilke` if no URL params are present.
 - Sample size and page dropdown let you page through SRU results (first/last page plus 5 before/after the current one).
