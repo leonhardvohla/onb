@@ -6,7 +6,7 @@ Catalogue Through Time is a single-page demo that queries the ONB SRU API live, 
 
 - For every code change, add or update tests that cover the change.
 - After changes, test the app live with the Playwright MCP.
-- Update `README.md` and this `AGENTS.md` when the change is user-facing or affects behavior, setup, or maintenance.
+- Update `README.md` and this `AGENTS.md` when the change is a bigger user-facing change, includes new features or affects behavior, setup, or maintenance.
 
 ## Repo structure
 
