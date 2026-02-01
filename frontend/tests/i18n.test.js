@@ -55,6 +55,21 @@ describe("translate", () => {
     expect(translate("de", "recordsCount", { count: 5 })).toBe("5 Einträge");
   });
 
+  it("builds localized timeline tooltip labels with singular/plural forms", () => {
+    expect(translate("en", "timelineEntryInYearSingular", { count: 1, year: 1899 })).toBe(
+      "1 entry in 1899"
+    );
+    expect(translate("en", "timelineEntryInYearPlural", { count: 2, year: 1899 })).toBe(
+      "2 entries in 1899"
+    );
+    expect(translate("de", "timelineEntryInYearSingular", { count: 1, year: 1899 })).toBe(
+      "1 Eintrag im Jahr 1899"
+    );
+    expect(translate("de", "timelineEntryInYearPlural", { count: 2, year: 1899 })).toBe(
+      "2 Einträge im Jahr 1899"
+    );
+  });
+
   it("falls back to English for unsupported locales", () => {
     expect(translate("fr", "searchButton")).toBe("Search");
   });

@@ -40,6 +40,8 @@ const MESSAGES = {
     enterSearchTerm: "Enter a search term first.",
     searchFailed: "Search failed.",
     noTimelineData: "No timeline data yet.",
+    timelineEntryInYearSingular: "{count} entry in {year}",
+    timelineEntryInYearPlural: "{count} entries in {year}",
     languageLabel: "Language",
     languageAria: "Language"
   },
@@ -80,6 +82,8 @@ const MESSAGES = {
     enterSearchTerm: "Bitte zuerst einen Suchbegriff eingeben.",
     searchFailed: "Suche fehlgeschlagen.",
     noTimelineData: "Noch keine Zeitstrahl-Daten.",
+    timelineEntryInYearSingular: "{count} Eintrag im Jahr {year}",
+    timelineEntryInYearPlural: "{count} Einträge im Jahr {year}",
     languageLabel: "Sprache",
     languageAria: "Sprache"
   }

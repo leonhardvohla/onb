@@ -63,6 +63,7 @@
           :data="timelineData"
           v-model:range="range"
           :empty-label="t('noTimelineData')"
+          :tooltip-label="timelineTooltipLabel"
         />
         <div
           v-if="loading"
@@ -172,6 +173,11 @@ const localeOptions = [
 ];
 
 const t = (key, params) => translate(locale.value, key, params);
+const timelineTooltipLabel = point => {
+  const count = Number(point?.count) || 0;
+  const key = count === 1 ? "timelineEntryInYearSingular" : "timelineEntryInYearPlural";
+  return t(key, { count, year: point.year });
+};
 
 const timelineData = computed(() => buildTimelineData(records.value));
 const filteredRecords = computed(() =>

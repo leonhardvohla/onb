@@ -5,6 +5,7 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import * as d3 from "d3";
+import { findNearestTimelinePoint } from "../lib/data";
 
 const props = defineProps({
   data: {
@@ -18,6 +19,10 @@ const props = defineProps({
   emptyLabel: {
     type: String,
     default: "No timeline data yet."
+  },
+  tooltipLabel: {
+    type: Function,
+    default: null
   }
 });
 
@@ -82,6 +87,18 @@ const render = () => {
     .range([height, 0]);
 
   const barWidth = Math.max(1, Math.min(2, width / data.length - 1));
+  const getTooltipLabel = point => {
+    if (typeof props.tooltipLabel === "function") {
+      return props.tooltipLabel(point);
+    }
+    const count = Number(point?.count) || 0;
+    const label = count === 1 ? "entry" : "entries";
+    return `${count} ${label} in ${point.year}`;
+  };
+  const tooltip = d3
+    .select(el)
+    .append("div")
+    .attr("class", "timeline-tooltip");
 
   chart
     .append("g")
@@ -100,7 +117,32 @@ const render = () => {
     .attr("width", barWidth)
     .attr("height", d => height - y(d.count))
     .attr("fill", "#d87b35")
-    .attr("opacity", 0.85);
+    .attr("opacity", 0.85)
+    .attr("aria-label", d => getTooltipLabel(d));
+
+  const showTooltip = event => {
+    const [pointerX, pointerY] = d3.pointer(event, chart.node());
+    if (pointerX < 0 || pointerX > width || pointerY < 0 || pointerY > height) {
+      tooltip.classed("timeline-tooltip-visible", false);
+      return;
+    }
+    const point = findNearestTimelinePoint(data, x.invert(pointerX));
+    if (!point) {
+      tooltip.classed("timeline-tooltip-visible", false);
+      return;
+    }
+    tooltip
+      .text(getTooltipLabel(point))
+      .style("left", `${margin.left + x(point.year)}px`)
+      .style("top", `${margin.top + y(point.count)}px`)
+      .classed("timeline-tooltip-visible", true);
+  };
+
+  const hideTooltip = () => {
+    tooltip.classed("timeline-tooltip-visible", false);
+  };
+
+  svg.on("pointermove", showTooltip).on("pointerleave", hideTooltip);
 
   const brush = d3
     .brushX()
@@ -127,7 +169,7 @@ const render = () => {
 };
 
 watch(
-  () => [props.data, props.range, props.emptyLabel],
+  () => [props.data, props.range, props.emptyLabel, props.tooltipLabel],
   () => {
     scheduleRender();
   },
